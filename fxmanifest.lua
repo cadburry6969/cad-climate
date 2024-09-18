@@ -9,8 +9,16 @@ shared_scripts {
     '@ox_lib/init.lua',
     'config.lua'
 }
-client_script 'client.lua'
-server_script 'server.lua'
+
+client_scripts {
+    'client.lua',
+    'bridge/cl_*.lua',
+}
+
+server_scripts {
+    'server.lua',
+    'bridge/sv_*.lua',
+}
 
 dependencies {
     'ox_lib'

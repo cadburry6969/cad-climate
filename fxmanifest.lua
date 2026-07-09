@@ -3,21 +3,27 @@ game 'gta5'
 lua54 'yes'
 
 author 'Cadburry (ByteCode Studios)'
-description 'Climate Control & Sync'
+description 'Weather/Time Sync with climate zones'
+version '0.8'
 
 shared_scripts {
     '@ox_lib/init.lua',
+    'bridge/**/shared.lua',
+    'modules/**/shared.lua'
+}
+
+files {
     'config.lua'
 }
 
 client_scripts {
-    'client.lua',
-    'bridge/cl_*.lua',
+    'bridge/**/client.lua',
+    'modules/**/client.lua',
 }
 
 server_scripts {
-    'server.lua',
-    'bridge/sv_*.lua',
+    'bridge/**/server.lua',
+    'modules/**/server.lua',
 }
 
 dependencies {

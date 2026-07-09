@@ -1,10 +1,22 @@
 ---#region declares
+---Cached `string.upper` for the weather-name comparisons in the hot path.
+---@type fun(s: string): string
 local string_upper = string.upper
+
+---Toggle state for the `/freeze_weather` command.
+---@type boolean?
+FrozenWeather = FrozenWeather
+
+---Toggle state for the `/freeze_time` command.
+---@type boolean?
+FrozenTime = FrozenTime
 ---#endregion declares
 
 ---#region supportive functions
+---@param name string
+---@return boolean
 local function doesWeatherExist(name)
-    for _, wtype in ipairs(WeatherTypes) do
+    for _, wtype in ipairs(Config.WeatherTypes) do
         if string_upper(name) == string_upper(wtype) then
             return true
         end
@@ -12,17 +24,20 @@ local function doesWeatherExist(name)
     return false
 end
 
+---@return nil
 local function cycleWeather()
-    if not GlobalState.FreezeWeatherSyncing and not ForceXMAS then
-        GlobalState.WeatherSyncing = DynamicWeatherList[math.random(#DynamicWeatherList)]
+    if not GlobalState.FreezeWeatherSyncing and not GetSetting('ForceXMAS') then
+        GlobalState.WeatherSyncing = Config.DynamicWeatherList[math.random(#Config.DynamicWeatherList)]
     end
-    if ForceXMAS then
+    if GetSetting('ForceXMAS') then
         GlobalState.WeatherSyncing = 'XMAS'
     end
 end
 ---#endregion supportive functions
 
 ---#region override events
+---@param name string
+---@param freeze boolean
 RegisterNetEvent('climate:changeWeather', function(name, freeze)
     if doesWeatherExist(name) then
         GlobalState.WeatherSyncing = string_upper(name)
@@ -30,6 +45,9 @@ RegisterNetEvent('climate:changeWeather', function(name, freeze)
     GlobalState.FreezeWeatherSyncing = freeze or false
 end)
 
+---@param hour number
+---@param min number
+---@param freeze boolean
 RegisterNetEvent('climate:changeTime', function(hour, min, freeze)
     if hour and min then
         if tonumber(hour) <= 24 and tonumber(min) <= 60 then
@@ -50,14 +68,14 @@ CreateThread(function()
     GlobalState.FreezeTimeSyncing = false
     GlobalState.FreezeWeatherSyncing = false
     GlobalState.BlackoutSyncing = false
-    if ForceXMAS then
+    if GetSetting('ForceXMAS') then
         GlobalState.WeatherSyncing = 'XMAS'
     end
 end)
 
 CreateThread(function()
     while true do
-        Wait(DynamicTimeChanger)
+        Wait(GetSetting('DynamicTimeChanger'))
         if not GlobalState.FreezeTimeSyncing then
             GlobalState.TimeMinutesSyncing = GlobalState.TimeMinutesSyncing + 1
             if GlobalState.TimeSyncing < 6 or GlobalState.TimeSyncing > 22 then
@@ -116,11 +134,12 @@ lib.addCommand('weather', {
         {
             name = 'name',
             type = 'string',
-            help = table.concat(WeatherTypes, ', '),
+            help = table.concat(Config.WeatherTypes, ', '),
         },
     },
     restricted = 'group.admin'
 }, function(source, args, raw)
+    ---@type string?
     local weather = args['name']
     if weather then
         if doesWeatherExist(weather) then
@@ -150,7 +169,9 @@ lib.addCommand('time', {
     },
     restricted = 'group.admin'
 }, function(source, args, raw)
+    ---@type number?
     local hour = args['hour']
+    ---@type number?
     local min = args['min']
     if hour and min then
         if tonumber(hour) <= 24 and tonumber(min) <= 60 then

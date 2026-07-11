@@ -39,7 +39,7 @@ return {
         { name = 'Mount Chiliad', coords = vector3(465.79, 5574.07, 781.17), radius = 750.0, weather = 'BLIZZARD', dynamic = false },
     },
 
-    ForceXMAS = true,
+    ForceXMAS = false,
 
     DynamicTimeChanger = 5000,
 
